@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<header>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@4.7.0/dist/echarts.min.js"></script>
+    <style>
+        h1
+        {
+            color:black; 
+            text-align: center;
+        }
+        body
+        {
+            background-color:#fbf7eb;
+            margin:0px;
+        }
+        form
+        {
+            text-align: center;
+        }
+        form input.search
+        {
+            width: 400px;
+            height: 25px;
+        }
+        form input.form-submit
+        {
+            background-color:#f66f6a;
+	        color:white;
+	        width: 200px;
+	        height: 25px;
+	        border:0;
+	        font-size: 16px;
+	        box-sizing: content-box;				
+            border-radius: 5px;
+        }
+        table
+        {
+            border-collapse: collapse;
+            margin: 30px 0px 120px;
+        }
+        table td, table th
+        {
+            border: 1px solid #cad9ea;
+            color: #666;
+            height: 30px;
+        }
+        table th
+        {
+            background-color: #CCE8EB;
+            width: 100px;
+        }
+        table tr:nth-child(odd)
+        {
+            background: #fff;
+        }
+        table tr:nth-child(even)
+        {
+            background: #F5FAFA;
+        }
+        .button1 
+        {
+            -webkit-transition-duration: 0.8s;
+            transition-duration: 0.8s;
+            width: 200px;
+	        height: 25px;
+            text-align: center;
+            background-color: white;
+            color: black;
+            border: 2px solid #f66f6a;
+            border-radius:5px;
+        }
+        .button1:hover 
+        {
+            background-color: #f66f6a;
+            color: white;
+        }
+        .button2 
+        {
+            -webkit-transition-duration: 0.8s;
+            transition-duration: 0.8s;
+            width: 100px;
+	        height: 25px;
+            text-align: center;
+            background-color: white;
+            color: black;
+            border: 2px solid #f66f6a;
+            border-radius:5px;
+        }
+        .button2:hover 
+        {
+            background-color: #f66f6a;
+            color: white;
+        }
+        div
+        {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+        }
+    </style>
+</header>
+
+<body>
+    <script>
+        var title, content, author, publish_time, website, get_data, maxn, sum = 0, page = 0, every_page = 5;
+        $(document).ready(function() {
+            function print(start, end){
+                var i = 0;
+                $("#record1").empty();
+                $("#record1").append('<tr class="cardLayout"><td>URL</td><td>新闻标题</td><td>作者</td><td>发布日期</td></tr>');
+                for (let list of get_data) {
+                    let table = '<tr class="cardLayout"><td>';
+                    Object.values(list).forEach(element => {table += (element + '</td><td>');});
+                    if(i >= start && i < end) $("#record1").append(table + '</td></tr>');
+                    i++;
+                }
+                return i;
+            }
+            $('input:button[name="fr"]').click(function() {
+                page = 1;
+                title = $('input[name="title_text"]').val();
+                content =  $('input[name="content_text"]').val();
+                author = $('input[name="author_text"]').val();
+                publish_time =  $('input[name="publish_time_text"]').val();
+                if(publish_time == "YYYY-MM-DD")
+                    publish_time = "";
+                website = $('select[name="website_text"]').val();
+                $.get('/get_data?title='+ title +'&content='+ content +'&author='+ author +
+                        '&publish_time='+ publish_time +'&website='+ website, function(data) {
+                    get_data = data;
+                    maxn = print(0, every_page);
+                    sum = maxn;
+                    console.log(sum);
+                    document.getElementById("output").innerHTML = '共 '+ sum +' 条记录';
+                });
+            });
+            $('input:button[name="se"]').click(function() {
+                page = $('input[name="page_text"]').val();
+                every_page = $('input[name="every_text"]').val();
+                if(page > Math.ceil(maxn / every_page)){alert('超出范围！');return ;}
+                print(every_page * (page - 1), every_page * page);
+            });
+            $('input:button[name="last"]').click(function() {print(every_page * (page - 1), every_page * page);});
+            $('input:button[name="next"]').click(function() {print(every_page * (page - 1), every_page * page);});
+        });
+        
+        function get_page(){
+            page = 1;
+            document.getElementById("page_text").value = page;
+        }
+        window.onload = get_page;
+        function get_page1(){
+            if(page == 1){alert('已为首页！');return ;}
+            page --;
+            document.getElementById("page_text").value = page;
+            document.getElementById("output").innerHTML = '共 '+ sum +' 条记录';
+        }
+        window.onload = get_page1;
+        function get_page2(){
+            if(page * every_page >= maxn){alert('已为末页！');return ;}
+            page ++;
+            document.getElementById("page_text").value = page;
+            document.getElementById("output").innerHTML = '共 '+ sum +' 条记录';
+        }
+        window.onload = get_page2;
+    </script>
+
+    <h1>新闻热度查询</h1>
+
+    <form>
+        <br> 标题：<input type="text" name="title_text"> <bd>
+        <bd> 内容：<input type="text" name="content_text"> <bd>
+        <bd> 作者：<input type="text" name="author_text"> <bd>
+        <bd> 时间：<input type="text" name="publish_time_text" value="YYYY-MM-DD" onFocus="if (value =='YYYY-MM-DD'){value ='';this.style.color='black';}" onBlur="if (value ==''){value='YYYY-MM-DD';this.style.color='gray';}"> <bd>
+        <bd>
+             网站：
+            <select style="height: 25px;width: 200px;text-align: center;" name="website_text">
+                <option value="cnw">中国新闻网</option>
+                <option value="cnr">中国广播网</option>
+                <option value="soh">搜狐新闻网</option>
+            </select>
+        </bd>
+        <bd> <input class="button1" type="button" name="fr" value="查询" onclick="get_page();">
+    </form>
+
+    <br>
+    <h2>欢迎查看 您的查询结果</h2>
+
+    <div class="cardLayout" style="margin: 0 auto">
+        <table width="100%" id="record1"></table>
+    </div>
+
+    <form>
+        <bd id="output"></bd>
+        <bd> 每页 <input type="text" name="every_text" id="every_text" style="width: 25px;text-align: center;" value="5"> 条</bd>
+        <input class="button2" type="button" name="last" value="上一页" onclick="get_page1();">
+        <bd> 第 <input type="text" name="page_text" id="page_text" style="width: 25px;text-align: center;"> <bd> 页</bd>
+        <bd> <input class="button2" type="button" name="se" value="跳转">
+        <bd> <input class="button2" type="button" name="next" value="下一页" onclick="get_page2();">
+    </form>
+
+    <h2>欢迎查看 查询标题时间热度分析</h2>
+
+    <div id="time" style="width:800px; height:500px;"></div>
+    
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('input:button[name="fr"]').click(function() {
+                var myChart2 = echarts.init(document.getElementById('time'));
+                var title = $('input[name="title_text"]').val();
+                var website = $('select[name="website_text"]').val();
+                $.get('/get_image?title='+ title +'&website='+ website).done(function (result) {
+                    myChart2.setOption({
+                        tooltip: {},
+                        xAxis: {data: result[0]},
+                        yAxis: {},
+                        series: [{name:'频数',type:'bar',data: result[1]}]
+                    })
+                })
+            })
+        })
+    </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.js"></script>
+</body>
+
+</html>
