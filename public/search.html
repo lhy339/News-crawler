@@ -1,120 +1,55 @@
 <!DOCTYPE html>
 <html>
-<header>
+<head>
+    <meta charset="utf-8">
+    <title>Welcome!</title>
+    <link rel="stylesheet" type="text/css" href="stylesheets/style.css">
     <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@4.7.0/dist/echarts.min.js"></script>
-    <style>
-        h1
-        {
-            color:black; 
-            text-align: center;
-        }
-        body
-        {
-            background-color:#fbf7eb;
-            margin:0px;
-        }
-        form
-        {
-            text-align: center;
-        }
-        form input.search
-        {
-            width: 400px;
-            height: 25px;
-        }
-        form input.form-submit
-        {
-            background-color:#f66f6a;
-	        color:white;
-	        width: 200px;
-	        height: 25px;
-	        border:0;
-	        font-size: 16px;
-	        box-sizing: content-box;				
-            border-radius: 5px;
-        }
-        table
-        {
-            border-collapse: collapse;
-            margin: 30px 0px 120px;
-        }
-        table td, table th
-        {
-            border: 1px solid #cad9ea;
-            color: #666;
-            height: 30px;
-        }
-        table th
-        {
-            background-color: #CCE8EB;
-            width: 100px;
-        }
-        table tr:nth-child(odd)
-        {
-            background: #fff;
-        }
-        table tr:nth-child(even)
-        {
-            background: #F5FAFA;
-        }
-        .button1 
-        {
-            -webkit-transition-duration: 0.8s;
-            transition-duration: 0.8s;
-            width: 200px;
-	        height: 25px;
-            text-align: center;
-            background-color: white;
-            color: black;
-            border: 2px solid #f66f6a;
-            border-radius:5px;
-        }
-        .button1:hover 
-        {
-            background-color: #f66f6a;
-            color: white;
-        }
-        .button2 
-        {
-            -webkit-transition-duration: 0.8s;
-            transition-duration: 0.8s;
-            width: 100px;
-	        height: 25px;
-            text-align: center;
-            background-color: white;
-            color: black;
-            border: 2px solid #f66f6a;
-            border-radius:5px;
-        }
-        .button2:hover 
-        {
-            background-color: #f66f6a;
-            color: white;
-        }
-        div
-        {
-            display: table-cell;
-            vertical-align: middle;
-            text-align: center;
-        }
-    </style>
-</header>
+</head>
 
 <body>
     <script>
         var title, content, author, publish_time, website, get_data, maxn, sum = 0, page = 0, every_page = 5;
         $(document).ready(function() {
             function print(start, end){
-                var i = 0;
+                function addDateZero(num) {
+                    return (num < 10 ? "0" + num : num);
+                }
+                var i = 0, sum = 0;
                 $("#record1").empty();
-                $("#record1").append('<tr class="cardLayout"><td>URL</td><td>新闻标题</td><td>作者</td><td>发布日期</td></tr>');
+                $("#record1").append('<tr class="cardLayout"><td>序号</td><td>URL</td><td>新闻标题</td><td>作者</td><td>发布日期</td></tr>');
                 for (let list of get_data) {
-                    let table = '<tr class="cardLayout"><td>';
-                    Object.values(list).forEach(element => {table += (element + '</td><td>');});
-                    if(i >= start && i < end) $("#record1").append(table + '</td></tr>');
+                    let table = '<tr class="cardLayout"><td>' + (i + 1) +'</td><td>';
+                    var j = 0;
+                    Object.values(list).forEach(element => {
+                        j++;
+                        if(j == 1)
+                            table += ('<a href="'+ element +'" target="'+ element +'">'+ element +'</a></td><td>');
+                        else
+                        if(j == 4)
+                        {
+                            let d = new Date(element);
+                            let formatdatetime = d.getFullYear() + '-' + addDateZero(d.getMonth() + 1) + '-' + addDateZero(d.getDate());
+                            table += (formatdatetime+ '</td><td>');
+                        }
+                        else
+                            table += (element + '</td><td>');
+                    });
+                    if(i >= start && i < end){
+                        sum ++;
+                        $("#record1").append(table + '</td></tr>');
+                    }
                     i++;
                 }
+                if(sum == 0){
+                    $("#record1").empty();
+                    $("#record2").empty();
+                    alert('没有查询结果！');
+                    return i;
+                }
+                for (var j = sum; j < every_page; j ++)
+                    $("#record1").append('<tr class="cardLayout"><td></td><td></td><td></td><td></td><td></td></tr>');
                 return i;
             }
             $('input:button[name="fr"]').click(function() {
@@ -141,8 +76,7 @@
                 if(page > Math.ceil(maxn / every_page)){alert('超出范围！');return ;}
                 print(every_page * (page - 1), every_page * page);
             });
-            $('input:button[name="last"]').click(function() {print(every_page * (page - 1), every_page * page);});
-            $('input:button[name="next"]').click(function() {print(every_page * (page - 1), every_page * page);});
+            $('input:button[name="buttons"]').click(function() {print(every_page * (page - 1), every_page * page);});
         });
         
         function get_page(){
@@ -164,18 +98,28 @@
             document.getElementById("output").innerHTML = '共 '+ sum +' 条记录';
         }
         window.onload = get_page2;
+        function get_toen(){
+            page = Math.ceil(maxn / every_page);
+            document.getElementById("page_text").value = page;
+        }
+        window.onload = get_toen;
+        function get_tost(){
+            page = 1;
+            document.getElementById("page_text").value = page;
+        }
+        window.onload = get_tost;
     </script>
 
     <h1>新闻热度查询</h1>
 
     <form>
-        <br> 标题：<input type="text" name="title_text"> <bd>
-        <bd> 内容：<input type="text" name="content_text"> <bd>
-        <bd> 作者：<input type="text" name="author_text"> <bd>
-        <bd> 时间：<input type="text" name="publish_time_text" value="YYYY-MM-DD" onFocus="if (value =='YYYY-MM-DD'){value ='';this.style.color='black';}" onBlur="if (value ==''){value='YYYY-MM-DD';this.style.color='gray';}"> <bd>
+        <br> 标题：<input class="from_text1" type="text" name="title_text"> <bd>
+        <bd> 内容：<input class="from_text1" type="text" name="content_text"> <bd>
+        <bd> 作者：<input class="from_text1" type="text" name="author_text"> <bd>
+        <bd> 时间：<input class="from_text1" type="text" name="publish_time_text" value="YYYY-MM-DD" onFocus="if (value =='YYYY-MM-DD'){value ='';this.style.color='black';}" onBlur="if (value ==''){value='YYYY-MM-DD';this.style.color='gray';}"> <bd>
         <bd>
              网站：
-            <select style="height: 25px;width: 200px;text-align: center;" name="website_text">
+            <select style="height: 25px;width: 200px;text-align: center; border-radius:4px;border: 2px solid #6aa9f6;" name="website_text">
                 <option value="cnw">中国新闻网</option>
                 <option value="cnr">中国广播网</option>
                 <option value="soh">搜狐新闻网</option>
@@ -185,7 +129,7 @@
     </form>
 
     <br>
-    <h2>欢迎查看 您的查询结果</h2>
+    <h2>查询结果</h2>
 
     <div class="cardLayout" style="margin: 0 auto">
         <table width="100%" id="record1"></table>
@@ -193,14 +137,16 @@
 
     <form>
         <bd id="output"></bd>
-        <bd> 每页 <input type="text" name="every_text" id="every_text" style="width: 25px;text-align: center;" value="5"> 条</bd>
-        <input class="button2" type="button" name="last" value="上一页" onclick="get_page1();">
-        <bd> 第 <input type="text" name="page_text" id="page_text" style="width: 25px;text-align: center;"> <bd> 页</bd>
-        <bd> <input class="button2" type="button" name="se" value="跳转">
-        <bd> <input class="button2" type="button" name="next" value="下一页" onclick="get_page2();">
+        <bd> 每页 <input class="from_text2" type="text" name="every_text" id="every_text" value="5"> 条</bd>
+        <bd> <input class="button2" type="button" name="buttons" value="首页" onclick="get_tost()"> </bd>
+        <bd> <input class="button2" type="button" name="buttons" value="上一页" onclick="get_page1();">
+        <bd> 第 <input class="from_text2" type="text" name="page_text" id="page_text"> <bd> 页</bd>
+        <bd> <input class="button2" type="button" name="se" value="跳转"> </bd>
+        <bd> <input class="button2" type="button" name="buttons" value="下一页" onclick="get_page2();"> </bd>
+        <bd> <input class="button2" type="button" name="buttons" value="尾页" onclick="get_toen()"> </bd>
     </form>
 
-    <h2>欢迎查看 查询标题时间热度分析</h2>
+    <h2>查询结果时间热度分析</h2>
 
     <div id="time" style="width:800px; height:500px;"></div>
     
@@ -208,14 +154,13 @@
         $(document).ready(function() {
             $('input:button[name="fr"]').click(function() {
                 var myChart2 = echarts.init(document.getElementById('time'));
-                var title = $('input[name="title_text"]').val();
-                var website = $('select[name="website_text"]').val();
-                $.get('/get_image?title='+ title +'&website='+ website).done(function (result) {
+                $.get('/get_image?title='+ title +'&content='+ content +'&author='+ author +
+                        '&publish_time='+ publish_time +'&website='+ website,).done(function (result) {
                     myChart2.setOption({
                         tooltip: {},
                         xAxis: {data: result[0]},
                         yAxis: {},
-                        series: [{name:'频数',type:'bar',data: result[1]}]
+                        series: [{name:'频数',type:'line',data: result[1]}]
                     })
                 })
             })
