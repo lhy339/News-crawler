@@ -22,6 +22,7 @@ var query = function(sql, sqlparam, callback) {
                 callback(qerr, vals, fields); //事件驱动回调 
             });
         }
+        pool.releaseConnection(conn);
     });
 };
 
